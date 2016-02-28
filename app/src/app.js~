@@ -1,0 +1,62 @@
+var app = angular.module('dapp', ['datatables']);
+app.controller('homeCtrl', function($scope,$timeout) {
+
+$scope.isAlert=true;
+
+var web3NodeA = new Web3();
+web3NodeA.setProvider(new web3NodeA.providers.HttpProvider('http://localhost:8000')); 
+$scope.nodeA_Accounts=web3NodeA.eth.accounts;
+var nodeAbalances=[];
+for(var i=0;i<$scope.nodeA_Accounts.length;i++){
+	nodeAbalances[i]=web3NodeA.fromWei(web3NodeA.eth.getBalance($scope.nodeA_Accounts[i]), "ether");
+	
+}
+$scope.nodeA_Balances=nodeAbalances;
+$scope.transaction=null;
+var web3NodeB = new Web3();
+web3NodeB.setProvider(new web3NodeB.providers.HttpProvider('http://localhost:8001')); 
+$scope.nodeB_Accounts=web3NodeB.eth.accounts;
+
+var nodeBbalances=[];
+for(var i=0;i<$scope.nodeB_Accounts.length;i++){
+	nodeBbalances[i]=web3NodeB.fromWei(web3NodeB.eth.getBalance($scope.nodeB_Accounts[i]), "ether");
+	
+}
+
+$scope.nodeB_Balances=nodeBbalances;
+// create Auto Closing Alert  
+$scope.createAutoClosingAlert = function(message) {
+   $scope.isAlert=false;
+   $scope.alertMsg=message;
+   $timeout(function(){$scope.isAlert=true;}, 2000);
+};
+
+// Add asset to Master Wallet
+$scope.addAsset = function(){
+var txId=web3NodeA.eth.sendTransaction({from: web3NodeA.eth.accounts[0], to: web3NodeA.eth.accounts[2], value: web3NodeA.toWei($scope.assetValue, 'ether'), data: "Adding Asset To Master Wallet"});
+$scope.transaction = web3NodeA.eth.getTransaction(txId);
+console.log(txId);
+console.log($scope.transaction);
+$scope.createAutoClosingAlert('Asset Added Successfully!!');
+}
+
+//Transfer Asset from from Master Wallet to a wallet 
+$scope.transferAsset = function(){
+var txId=web3NodeA.eth.sendTransaction({from: web3NodeA.eth.accounts[2], to: $scope.walletTo, value: web3NodeA.toWei($scope.masterAssetValue, 'ether')});
+$scope.transaction = web3NodeA.eth.getTransaction(txId);
+$scope.createAutoClosingAlert('Asset Transferred Successfully!!');
+}
+
+// Transfer coins between wallets  
+$scope.transfer =function(){
+
+console.log($scope.from);
+var txId=web3NodeB.eth.sendTransaction({from: $scope.from, to: $scope.to, value: web3NodeB.toWei($scope.value, 'ether')});
+$scope.transaction = web3NodeB.eth.getTransaction(txId);
+$scope.createAutoClosingAlert('Transaction was successfull');
+console.log($scope.to);
+}
+
+
+
+});

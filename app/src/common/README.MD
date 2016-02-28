@@ -1,0 +1,1 @@
+Contains all common html elements and its javascript 
